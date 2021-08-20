@@ -1,0 +1,58 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    admin.category:
+        class: App\Admin\CategoryAdmin
+        arguments: [~, App\Entity\Category, ~]
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: admin, label: Category,show_in_dashboard: false }
+        public: true
+
+    admin.component:
+        class: App\Admin\ComponentAdmin
+        arguments: [~, App\Entity\Component, App\Controller\ComponentAdminController]
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: Component, label: Component }
+        public: true
+    jwt_token_authenticator:
+        class: App\Security\JwtTokenAuthenticator
+        arguments:
+            - "@lexik_jwt_authentication.encoder.lcobucci"
+            - "@service_container"
+    lexik_jwt_authentication.handler.authentication_success:
+        class: Lexik\Bundle\JWTAuthenticationBundle\Security\Http\Authentication\AuthenticationSuccessHandler
+        public: true
+        autowire: true
+    lexik_jwt_authentication.jwt_token_authenticator:
+        class: Lexik\Bundle\JWTAuthenticationBundle\Security\Guard\JWTTokenAuthenticator
+        public: true
+        autowire: true
