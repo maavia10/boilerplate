@@ -91,12 +91,18 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        if ($targetPath = $this->getTargetPath($request->getSession(), $providerKey)) {
-            return new RedirectResponse($targetPath);
-        }
+        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+
+            if($targetPath) {
+                return new RedirectResponse($targetPath);
+            }else{
+
+                return  new RedirectResponse($this->urlGenerator->generate('sonata_admin_dashboard'));
+            }
+
 
         // For example : return new RedirectResponse($this->urlGenerator->generate('some_route'));
-        throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
+        //throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
     }
 
     protected function getLoginUrl()
